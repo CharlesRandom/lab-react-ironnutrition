@@ -3,13 +3,15 @@ import './App.css';
 import foods from './foods.json'
 import FoodBox from './components/FoodBox';
 import FoodForm from './components/FoodForm';
+// import 'bulma/css/bulma.css'
 
 class App extends Component {
 
   state = {
     food:{},
     foods:[],
-    todaysFood:[]
+    todaysFood:[],
+    totalCal:0
   }
 
   componentWillMount = () => {
@@ -27,13 +29,23 @@ class App extends Component {
     food['quantity']=0
     foods.push(food)
     this.setState({foods})
+    console.log(this.state.foods)
   }
 
   onChange = e => {
     const {food} = this.state
-    food[e.target.name] = e.target.value
+    const {name,value} = e.target
+    food[name] = value
+    // food[e.target.name] = e.target.value
     this.setState({food})
-    console.log(this.state.food)
+    // console.log(this.state.food)
+  }
+
+  searchFood = e => {
+    const text = e.target.value
+    const regEx = RegExp(text, "i")
+    const filtered = foods.filter(f => regEx.test(f.name))
+    this.setState({ foods:filtered })
   }
 
   onSearch = e => {
@@ -56,6 +68,7 @@ class App extends Component {
     const {foods} = this.state
     foods[e.target.name].quantity = e.target.value
     this.setState({foods})
+    // console.log(this.state.foods)
   }
 
   onAdd = e => {
@@ -63,11 +76,17 @@ class App extends Component {
     const {foods} = this.state
     const tFood = {
       name:foods[e.target.name].name,
-      qty:foods[e.target.name].quantity,
-      cal:foods[e.target.name].calories*foods[e.target.name].quantity
+      quantity:foods[e.target.name].quantity,
+      calories:foods[e.target.name].calories*foods[e.target.name].quantity
     }
     todaysFood.push(tFood)
     this.setState({todaysFood})
+    this.sumCal()
+  }
+
+  sumCal = () => {
+    let todaysFoodCal = this.state.todaysFood.map(f => f.calories)
+    this.setState({ totalCal: todaysFoodCal.reduce((a,b) => a + b,0) })
   }
 
   //Tratando de obtener el acumulado de calorías
@@ -75,12 +94,12 @@ class App extends Component {
 
   render() {
     // console.log(this.state)
-    const { drawFoodBox, onSubmit, onChange, onSearch, onAdd } = this
-    const {food, todaysFood} = this.state
+    const { drawFoodBox, onSubmit, onChange, searchFood } = this
+    const {food, todaysFood, totalCal} = this.state
     return (
       <Fragment>
         <h1>Iron Nutrition</h1>
-        <input type="text" onChange={onSearch} name="searchBar" />
+        <input type="text" onChange={searchFood} name="searchBar" placeholder='search...'/>
         <FoodForm onSubmit={onSubmit} onChange={onChange} {...food} />
         <div className="columns">
           <div className="column">
@@ -88,7 +107,8 @@ class App extends Component {
           </div>
           <div className="column">
             <h2>Today's Food</h2>
-            {todaysFood.map((food,idx) => <li key={idx}>{food.qty} {food.name} - {food.cal} cal</li>)}
+            {todaysFood.map((food,idx) => <li key={idx}>{food.quantity} {food.name} - {food.calories} cal</li>)}
+            Total: {totalCal} cal.
           </div>
         </div>
       </Fragment>

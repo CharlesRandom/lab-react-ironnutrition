@@ -21,6 +21,8 @@ const FoodBox = ({ onAdd, onChangeQty, arrayPos, name, calories, image, quantity
           <div className="control">
             <input
               name={arrayPos}
+              value={quantity}
+              min='0'
               onChange={onChangeQty}
               className="input"
               type="number" 
